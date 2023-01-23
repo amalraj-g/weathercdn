@@ -1,11 +1,19 @@
-const loc=document.getElementById("location");
-const tempValue=document.getElementById("temp-value");
-const tempIcon=document.getElementById("temp-icon");
-const climate=document.getElementById("climate");
+const loc=document.querySelector(".location");
+const tempValue=document.querySelector(".temp-value");
+const tempIcon=document.querySelector(".temp-icon");
+const climate=document.querySelector(".climate");
+
 const searchInput=document.getElementById("search");
 const searchButton=document.getElementById("btn");
 
+const weather={};
 
+weather.temperature={
+    unit:"celsius"
+}
+
+const kelvin=273;
+const key= "35cd2f337c1aa13f788b75835d33d22f";
 
 searchButton.addEventListener("click",(event)=>
 {
@@ -14,103 +22,45 @@ searchButton.addEventListener("click",(event)=>
     searchInput.value="";
 });
 
-    const getWeather= async (city)=>
+if(navigator.geolocation)
+{
+    navigator.geolocation.getCurrentPosition(setPosition);
+}
+function setPosition(position){
+    let long=position.coords.longitude;
+    let lat=position.coords.latitude;
+
+}
+
+function getWeather(city){
+    let api=`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
+    
+    fetch(api)
+    .then(function(response){
+        const data = response.json();
+        return data;
+    })
+    .then(function(data){
+        weather.temperature.value = Math.floor(data.main.temp - kelvin);
+        weather.iconId = data.weather[0].icon;
+        weather.city = data.name;
+        weather.description=data.weather[0].description;
+    })
+    .then(function(){
+        displayWeather();
+
+    })
+    .catch(function(error)
     {
-        try{
-                const response=await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=35cd2f337c1aa13f788b75835d33d22f`,
-                    {mode: "cors"} 
-                );
-            
-                const weatherData=await response.json();
-                
+        return alert("city cant found");
+    })
+    
+}
 
-                const{name}= weatherData;
-                const{feels_like}= weatherData.main;
-                const{id,main}= weatherData.weather[0];
+function displayWeather(){
+    loc.innerHTML=`${weather.city}`;
+    tempIcon.innerHTML=`<img src ="./icons/${weather.iconId}.png"/>`;
+    tempValue.innerHTML=`${weather.temperature.value}<span>&#176c</span>`;
+    climate.innerHTML=`${weather.description}`;
+}
 
-                loc.textContent = name;
-                climate.textContent = main;
-                tempValue.textContent = Math.round(feels_like-273);
-                
-                if(id<300 && id>200){
-                    tempIcon.src="./icons/winter.png";
-                }
-                else if(id<400 && id>300){
-                    tempIcon.src="./icons/cloudy-rain.png";
-                }
-
-                else if(id<600 && id>500){
-                    tempIcon.src="./icons/rain.png";
-                }
-
-                else if(id<700 && id>600){
-                    tempIcon.src="./icons/snow-storm.png";
-                }
-                else if(id<800 && id>700){
-                    tempIcon.src="./icons/storm.png";
-                }
-                else (id===800)
-                {
-                    tempIcon.src="./icons/thunderstorm.png";
-                }
-            }
-            catch(err){
-                alert("city cant found");
-            }
-
-
-    };
-
-window.addEventListener("load",()=>{
-    let long;
-    let lat;
-
-    if (navigator.geolocation)
-    {
-        navigator.geolocation.getCurrentPosition((position)=>{
-
-            long=position.coords.longitude;
-            lat=position.coords.latitude;
-            
-            const Proxy ="https://cors-anywhere.herokuapp.com/";
-                const api=`${Proxy}api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${long}&appid=35cd2f337c1aa13f788b75835d33d22f`;
-
-            fetch (api).then((response) =>
-            {
-                return response.json();
-            })
-            .then((data) =>
-            {
-                    const{name}= data;
-                    const{feels_like}= data.main;
-                    const{id,main}= data.weather[0];
-
-                    loc.textContent = name;
-                    climate.textContent = main;
-                    tempValue.textContent = Math.round(feels_like-273);
-                    if(id<300 && id>200){
-                        tempIcon.src="./icons/winter.png";
-                    }
-                    else if(id<400 && id>300){
-                        tempIcon.src="./icons/cloudy-rain.png";
-                    }
-
-                    else if(id<600 && id>500){
-                        tempIcon.src="./icons/rain.png";
-                    }
-
-                    else if(id<700 && id>600){
-                        tempIcon.src="./icons/snow-storm.png";
-                    }
-                    else if(id<800 && id>700){
-                        tempIcon.src="./icons/storm.png";
-                    }
-                    else(id===800)
-                    {
-                        tempIcon.src="./icons/thunderstorm.png";
-                    }
-
-            })
-        })
-    }
-})
