@@ -11,7 +11,6 @@ const weather={};
 weather.temperature={
     unit:"celsius"
 }
-
 const kelvin=273;
 const key= "35cd2f337c1aa13f788b75835d33d22f";
 
@@ -34,7 +33,6 @@ function setPosition(position){
 
 function getWeather(city){
     let api=`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${key}`;
-    
     fetch(api)
     .then(function(response){
         const data = response.json();
